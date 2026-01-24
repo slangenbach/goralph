@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  run:
+    cmds:
+      - go run main.go
+    desc: Run app
+
+  build:
+    env:
+      GOOS: "{{.OS}}"
+      GOARCH: "{{.ARCH}}"
+    cmds:
+      - go build -o dist/{{.OS}}/{{.ARCH}}/ralph{{.EXT}}
+    requires:
+      vars:
+        - OS
+        - ARCH
+    desc: Build binary for a single OS
+
+  build-all:
+    cmds:
+      - task build OS=windows ARCH=amd64 EXT=.exe
+      - task build OS=darwin ARCH=amd64 EXT=
+      - task build OS=linux ARCH=amd64 EXT=
+    desc: Build binaries for Windows, macOS and Linux

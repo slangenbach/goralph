@@ -31,3 +31,4 @@ go.work.sum
 progress.txt
 prd.json
 copilot-session-*
+dist/
