@@ -1,0 +1,9 @@
+Here is the current PRD:
+{{.PRD}}
+
+Here is the progress so far:
+{{.PROGRESS}}
+
+Pick the highest priority incomplete task, implement it, commit your work, and append your progress to progress.txt.
+
+When there is no further work to be done, reply with <promise>COMPLETE</promise>.

@@ -1,0 +1,13 @@
+{
+    "prd": "./prd.json",
+    "progress": "./progress.txt",
+    "prompt": "./prompt.txt",
+    "maxIterations": 10,
+    "tools": {
+        "allow": [
+            "write",
+            "shell(git:*)"
+        ],
+        "deny": []
+    }
+}
