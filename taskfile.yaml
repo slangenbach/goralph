@@ -8,10 +8,26 @@ tasks:
       - task --list
     silent: true
 
+  setup:
+    cmds:
+      - go mod tidy
+    desc: Setup project dependencies
+
+  lint:
+    cmds:
+      - go vet
+      - go fmt
+    desc: Run linters
+
+  test:
+    cmds:
+      - go test
+    desc: Run tests
+
   run:
     cmds:
       - go run main.go
-    desc: Run app
+    desc: Run application
 
   build:
     env:
