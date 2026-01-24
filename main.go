@@ -3,12 +3,14 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
 	"text/template"
 )
+
+const exitCondition = "<promise>COMPLETE</promise>"
 
 type Config struct {
 	PRD           string `json:"prd"`
@@ -39,6 +41,24 @@ func loadConfig(path string) (Config, error) {
 	}
 
 	return config, err
+}
+
+func createLogger(logLevel string) {
+	var level slog.Level
+
+	switch strings.ToLower(logLevel) {
+	case "debug":
+		level = slog.LevelDebug
+	case "warn":
+		level = slog.LevelWarn
+	case "error":
+		level = slog.LevelError
+	default:
+		level = slog.LevelInfo
+	}
+
+	handler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: level})
+	slog.SetDefault(slog.New(handler))
 }
 
 func readFile(path string) (string, error) {
@@ -88,7 +108,7 @@ func runCopilot(prompt string, model string, tools Tools, logLevel string) (stri
 
 	cmd := exec.Command("copilot", args...)
 
-	log.Printf("Running Copilot: %v", cmd.Args)
+	slog.Debug("Running Copilot", "args", cmd.Args)
 	result, err := cmd.CombinedOutput()
 
 	if err != nil {
@@ -104,42 +124,51 @@ func main() {
 	flag.Parse()
 
 	config, err := loadConfig(*configPath)
+	createLogger(config.LogLevel)
 	if err != nil {
-		log.Fatalf("Could not load config: %v", err)
+		slog.Error("Could not load config", "err", err)
+		os.Exit(1)
 	}
-	log.Printf("Config: %+v\n", config)
 
 	prd, err := readFile(config.PRD)
 	if err != nil {
-		log.Fatalf("Could not load PRD: %v", err)
+		slog.Error("Could not load PRD: ", "err", err)
+		os.Exit(1)
 	}
 
-	prompTmpl, err := readFile(config.Prompt)
+	promptTmpl, err := readFile(config.Prompt)
 	if err != nil {
-		log.Printf("Could not load prompt template: %v", err)
+		slog.Error("Could not load prompt template", "err", err)
+		os.Exit(1)
 	}
 
 	for i := 0; i < config.MaxIterations; i++ {
+		slog.Debug("Running iteration", "iter", i)
 
 		progress, err := readFile(config.Progress)
 		if err != nil {
-			log.Printf("Could not load progress: %v", err)
+			slog.Warn("Could not load progress", "err", err)
 		}
 
-		prompt, err := buildPrompt(prompTmpl, prd, progress)
+		prompt, err := buildPrompt(promptTmpl, prd, progress)
 		if err != nil {
-			log.Printf("Could not build prompt: %v", err)
+			slog.Error("Could not build prompt", "err", err)
+			os.Exit(1)
 		}
-		log.Printf("Built prompt: %v", prompt)
+		slog.Debug("Built prompt", "prompt", prompt)
 
 		result, err := runCopilot(prompt, config.Model, config.Tools, config.LogLevel)
 		if err != nil {
-			log.Printf("Could not run Copilot CLI: %v", err)
+			slog.Error("Could not run Copilot CLI", "err", err)
+			os.Exit(1)
 		}
-		log.Printf("Here is the result: %v", result)
+		slog.Debug("Here is the result", "result", result)
 
-		if strings.Contains(result, "<promise>COMPLETE</promise>") {
+		if strings.Contains(result, exitCondition) {
 			os.Exit(0)
 		}
-}
+	}
+
+	slog.Warn("Reached max iterations without completion", "iterations", config.MaxIterations)
+	os.Exit(2)
 }
