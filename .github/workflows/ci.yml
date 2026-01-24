@@ -1,0 +1,27 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v6
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+
+      - name: Install Task
+        uses: go-task/setup-task@v1
+
+      - name: Install dependencies
+        run: task setup
+
+      - name: Run linters
+        run: task lint
+
+      - name: Run tests
+        run: task test
