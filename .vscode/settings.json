@@ -1,0 +1,6 @@
+{
+    "go.lintOnSave": "off",
+    "gopls": {
+        "ui.diagnostic.staticcheck": true
+    }
+}

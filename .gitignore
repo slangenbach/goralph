@@ -30,3 +30,4 @@ go.work.sum
 # Custom files
 progress.txt
 prd.json
+copilot-session-*

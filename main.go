@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"strings"
 	"text/template"
 )
@@ -14,8 +14,10 @@ type Config struct {
 	PRD           string `json:"prd"`
 	Progress      string `json:"progress"`
 	Prompt        string `json:"prompt"`
+	Model         string `json:"model"`
 	MaxIterations int    `json:"maxIterations"`
 	Tools         Tools  `json:"tools"`
+	LogLevel      string `json:"loglevel"`
 }
 
 type Tools struct {
@@ -48,26 +50,10 @@ func readFile(path string) (string, error) {
 	return string(f), err
 }
 
-func loadPRD(path string) (string, error) {
-	var prd string
-
-	file, err := os.ReadFile(path)
-	if err != nil {
-		return prd, err
-	}
-
-	err = json.Unmarshal(file, &prd)
-	if err != nil {
-		return prd, err
-	}
-
-	return prd, err
-}
-
 func buildPrompt(promptTemplate string, prd string, progress string) (string, error) {
 	type PromptVars struct {
-		prd      string
-		progress string
+		PRD      string
+		PROGRESS string
 	}
 	var prompt strings.Builder
 
@@ -84,25 +70,48 @@ func buildPrompt(promptTemplate string, prd string, progress string) (string, er
 	return prompt.String(), err
 }
 
+func buildToolArgs(args []string, tools Tools) []string {
+	for _, tool := range tools.Allow {
+		args = append(args, "--allow-tool", tool)
+	}
+
+	for _, tool := range tools.Deny {
+		args = append(args, "--deny-tool", tool)
+	}
+
+	return args
+}
+
+func runCopilot(prompt string, model string, tools Tools, logLevel string) (string, error) {
+	args := []string{"--prompt", prompt, "--model", model, "--log-level", logLevel, "--share", "--silent"}
+	args = buildToolArgs(args, tools)
+
+	cmd := exec.Command("copilot", args...)
+
+	log.Printf("Running Copilot: %v", cmd.Args)
+	result, err := cmd.CombinedOutput()
+
+	if err != nil {
+		return string(result), err
+	}
+
+	return string(result), err
+
+}
+
 func main() {
 	configPath := flag.String("config", "config.json", "Path to config file")
 	flag.Parse()
 
 	config, err := loadConfig(*configPath)
 	if err != nil {
-		log.Fatalf("Loading config failed: %v", err)
+		log.Fatalf("Could not load config: %v", err)
 	}
+	log.Printf("Config: %+v\n", config)
 
-	fmt.Printf("Loaded config: %+v\n", config)
-
-	prd, err := loadPRD(config.PRD)
+	prd, err := readFile(config.PRD)
 	if err != nil {
 		log.Fatalf("Could not load PRD: %v", err)
-	}
-
-	progress, err := readFile(config.Progress)
-	if err != nil {
-		log.Printf("Could not load progress: %v", err)
 	}
 
 	prompTmpl, err := readFile(config.Prompt)
@@ -110,11 +119,27 @@ func main() {
 		log.Printf("Could not load prompt template: %v", err)
 	}
 
-	prompt, err := buildPrompt(prompTmpl, prd, progress)
-	if err != nil {
-		log.Printf("Could not build prompt: %v", err)
-	}
+	for i := 0; i < config.MaxIterations; i++ {
 
-	fmt.Print(prompt)
+		progress, err := readFile(config.Progress)
+		if err != nil {
+			log.Printf("Could not load progress: %v", err)
+		}
 
+		prompt, err := buildPrompt(prompTmpl, prd, progress)
+		if err != nil {
+			log.Printf("Could not build prompt: %v", err)
+		}
+		log.Printf("Built prompt: %v", prompt)
+
+		result, err := runCopilot(prompt, config.Model, config.Tools, config.LogLevel)
+		if err != nil {
+			log.Printf("Could not run Copilot CLI: %v", err)
+		}
+		log.Printf("Here is the result: %v", result)
+
+		if strings.Contains(result, "<promise>COMPLETE</promise>") {
+			os.Exit(0)
+		}
+}
 }
