@@ -34,7 +34,7 @@ tasks:
       GOOS: "{{.OS}}"
       GOARCH: "{{.ARCH}}"
     cmds:
-      - go build -o dist/{{.OS}}/{{.ARCH}}/ralph{{.EXT}}
+      - go build -o dist/ralph-{{.OS}}-{{.ARCH}}{{.EXT}}
     requires:
       vars:
         - OS
