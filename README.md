@@ -30,9 +30,9 @@ Edit the **.config.json** file in project root directory to configure the follow
 | progress | Path to the progress file | Defaults to `./.ralph/progress.txt` |
 | prompt | Path to the prompt template | Defaults to `./.ralph/prompt.txt` |
 | model | Copilot model to use | e.g. `claude-haiku-4.5` |
-| maxIterations | Maximum loop iterations | Prevents infinite runs |
 | tools.allow | List of allowed Copilot tools | e.g. `["write", "shell(git:*)"]` |
 | tools.deny | List of denied Copilot tools | e.g. `["shell(rm -rf *)"]` |
+| timeout | Duration in minutes after Ralph stops | Defaults to 60 minutes |
 | logLevel | Set the logging level | Defaults to `info` |
 
 ## Usage
@@ -41,7 +41,7 @@ Edit the **.config.json** file in project root directory to configure the follow
 1. Adapt config files as needed
 1. Run Ralph
 
-Ralph will loop until Copilot responds with `<promise>COMPLETE</promise>` or max iterations is reached.
+Ralph will loop until Copilot responds with `<promise>COMPLETE</promise>` or timeout is reached.
 
 ## Troubleshooting
 
@@ -57,9 +57,9 @@ Verify the PRD path in `config.json`
 
 Check tool permissions and ensure at least one tool is allowed
 
-### Max iterations reached
+### Timeout reached
 
-Increase `maxIterations` or simplify your PRD tasks
+Increase `timeout` or simplify your PRD tasks
 
 ## Contributing
 

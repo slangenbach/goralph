@@ -50,5 +50,5 @@ tasks:
 
   create-pr:
     cmds:
-      - gh create pr --fill --assignee @me
+      - gh pr create --fill --assignee @me
     desc: Create GitHub pull request
