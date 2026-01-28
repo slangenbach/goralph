@@ -14,6 +14,7 @@ import (
 )
 
 const exitCondition = "<promise>COMPLETE</promise>"
+const defaultConfigDir = ".ralph"
 
 //go:embed templates/config.json
 var defaultConfig string
@@ -138,9 +139,10 @@ func initFiles() {
 		"prompt.md":   defaultPrompt,
 	}
 
-	os.Mkdir(".ralph", 0755)
+	os.Mkdir(defaultConfigDir, 0755)
+
 	for path, content := range files {
-		fullPath := filepath.Join(".ralph", path)
+		fullPath := filepath.Join(defaultConfigDir, path)
 		_, err := os.Stat(fullPath)
 		if !os.IsNotExist(err) {
 			continue
@@ -150,7 +152,7 @@ func initFiles() {
 }
 
 func main() {
-	configPath := flag.String("config", ".ralph/config.json", "Path to config file")
+	configPath := flag.String("config", filepath.Join(defaultConfigDir, "config.json"), "Path to config file")
 	doInitFiles := flag.Bool("init", false, "Generate sample configs")
 	flag.Parse()
 
@@ -192,7 +194,6 @@ func main() {
 			slog.Error("Could not build prompt", "err", err)
 			os.Exit(1)
 		}
-		slog.Debug("Built prompt", "prompt", prompt)
 
 		result, err := runCopilot(prompt, config.Model, config.Tools, config.LogLevel)
 		if err != nil {
@@ -202,6 +203,7 @@ func main() {
 		slog.Debug("Here is the result", "result", result)
 
 		if strings.Contains(result, exitCondition) {
+			slog.Info("Implementation completed")
 			os.Exit(0)
 		}
 	}
