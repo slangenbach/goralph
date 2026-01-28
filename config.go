@@ -6,13 +6,13 @@ import (
 )
 
 type Config struct {
-	PRD      string `json:"prd"`
-	Progress string `json:"progress"`
-	Prompt   string `json:"prompt"`
-	Model    string `json:"model"`
-	Tools    Tools  `json:"tools"`
-	Timeout  int    `json:"timeout"`
-	LogLevel string `json:"loglevel"`
+	PRDFilePath      string `json:"prd"`
+	ProgressFilePath string `json:"progress"`
+	PromptFilePath   string `json:"prompt"`
+	Model            string `json:"model"`
+	Tools            Tools  `json:"tools"`
+	Timeout          int    `json:"timeout"`
+	LogLevel         string `json:"loglevel"`
 }
 
 type Tools struct {

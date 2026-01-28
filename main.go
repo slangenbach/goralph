@@ -28,13 +28,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	prd, err := readFile(config.PRD)
+	prd, err := readFile(config.PRDFilePath)
 	if err != nil {
 		slog.Error("Could not load PRD: ", "err", err)
 		os.Exit(1)
 	}
 
-	promptTmpl, err := readFile(config.Prompt)
+	promptTmpl, err := readFile(config.PromptFilePath)
 	if err != nil {
 		slog.Error("Could not load prompt template", "err", err)
 		os.Exit(1)
@@ -45,7 +45,7 @@ func main() {
 
 	slog.Info("Starting implementation")
 	for {
-		progress, err := readFile(config.Progress)
+		progress, err := readFile(config.ProgressFilePath)
 		if err != nil {
 			slog.Warn("Could not load progress", "err", err)
 		}
