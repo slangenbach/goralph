@@ -3,12 +3,12 @@
         {
             "id": 1,
             "task": "Create a Go application with a single function called 'hello' that prints 'Hello World!'",
-            "passes": true
+            "passes": false
         },
         {
             "id": 2,
             "task": "Adapt the function to accept a name parameter and print 'Hello, <name>!'",
-            "passes": true
+            "passes": false
         }
     ]
 }
