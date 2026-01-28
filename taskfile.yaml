@@ -26,7 +26,7 @@ tasks:
 
   run:
     cmds:
-      - go run main.go
+      - go run main.go {{.CLI_ARGS}}
     desc: Run application
 
   build:
