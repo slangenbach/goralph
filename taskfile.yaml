@@ -47,3 +47,8 @@ tasks:
       - task build OS=darwin ARCH=amd64 EXT=
       - task build OS=linux ARCH=amd64 EXT=
     desc: Build binaries for Windows, macOS and Linux
+
+  create-pr:
+    cmds:
+      - gh create pr --fill --assignee @me
+    desc: Create GitHub pull request
