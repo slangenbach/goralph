@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"log/slog"
@@ -9,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"time"
 
 	_ "embed"
 )
@@ -26,13 +28,13 @@ var defaultPRD string
 var defaultPrompt string
 
 type Config struct {
-	PRD           string `json:"prd"`
-	Progress      string `json:"progress"`
-	Prompt        string `json:"prompt"`
-	Model         string `json:"model"`
-	MaxIterations int    `json:"maxIterations"`
-	Tools         Tools  `json:"tools"`
-	LogLevel      string `json:"loglevel"`
+	PRD      string `json:"prd"`
+	Progress string `json:"progress"`
+	Prompt   string `json:"prompt"`
+	Model    string `json:"model"`
+	Tools    Tools  `json:"tools"`
+	Timeout  int    `json:"timeout"`
+	LogLevel string `json:"loglevel"`
 }
 
 type Tools struct {
@@ -115,11 +117,11 @@ func buildToolArgs(args []string, tools Tools) []string {
 	return args
 }
 
-func runCopilot(prompt string, model string, tools Tools, logLevel string) (string, error) {
+func runCopilot(ctx context.Context, prompt string, model string, tools Tools, logLevel string) (string, error) {
 	args := []string{"--prompt", prompt, "--model", model, "--log-level", logLevel, "--share", "--silent"}
 	args = buildToolArgs(args, tools)
 
-	cmd := exec.Command("copilot", args...)
+	cmd := exec.CommandContext(ctx, "copilot", args...)
 
 	slog.Debug("Running Copilot", "args", cmd.Args)
 	result, err := cmd.CombinedOutput()
@@ -181,9 +183,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	for i := 0; i < config.MaxIterations; i++ {
-		slog.Debug("Running iteration", "iter", i)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(config.Timeout)*time.Minute)
+	defer cancel()
 
+	slog.Info("Starting implementation")
+	for {
 		progress, err := readFile(config.Progress)
 		if err != nil {
 			slog.Warn("Could not load progress", "err", err)
@@ -195,8 +199,12 @@ func main() {
 			os.Exit(1)
 		}
 
-		result, err := runCopilot(prompt, config.Model, config.Tools, config.LogLevel)
+		result, err := runCopilot(ctx, prompt, config.Model, config.Tools, config.LogLevel)
 		if err != nil {
+			if ctx.Err() != nil {
+				slog.Warn("Reached timeout without completion", "timeout", config.Timeout)
+				os.Exit(2)
+			}
 			slog.Error("Could not run Copilot CLI", "err", err)
 			os.Exit(1)
 		}
@@ -207,7 +215,4 @@ func main() {
 			os.Exit(0)
 		}
 	}
-
-	slog.Warn("Reached max iterations without completion", "iterations", config.MaxIterations)
-	os.Exit(2)
 }
