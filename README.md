@@ -26,9 +26,9 @@ Edit the **.config.json** file in project root directory to configure the follow
 
 | Setting | Description | Note |
 | --- | --- | --- |
-| prd | Path to the PRD JSON file | e.g. `./prd.json` |
-| progress | Path to the progress file | e.g. `./progress.txt` |
-| prompt | Path to the prompt template | e.g. `./prompt.txt` |
+| prd | Path to the PRD JSON file | Defaults to `./.ralph/prd.json` |
+| progress | Path to the progress file | Defaults to `./.ralph/progress.txt` |
+| prompt | Path to the prompt template | Defaults to `./.ralph/prompt.txt` |
 | model | Copilot model to use | e.g. `claude-haiku-4.5` |
 | maxIterations | Maximum loop iterations | Prevents infinite runs |
 | tools.allow | List of allowed Copilot tools | e.g. `["write", "shell(git:*)"]` |
@@ -37,7 +37,8 @@ Edit the **.config.json** file in project root directory to configure the follow
 
 ## Usage
 
-1. Create a PRD file with tasks to complete
+1. Create sample config files (`config.json`, `prd.json` and `prompt.md`) via: `ralph -init`
+1. Adapt config files as needed
 1. Run Ralph
 
 Ralph will loop until Copilot responds with `<promise>COMPLETE</promise>` or max iterations is reached.
@@ -46,11 +47,11 @@ Ralph will loop until Copilot responds with `<promise>COMPLETE</promise>` or max
 
 ### Could not load config
 
-Check config.json path and JSON syntax
+Check `config.json` path and JSON syntax
 
 ### Could not load PRD
 
-Verify the prd path in config.json
+Verify the PRD path in `config.json`
 
 ### Empty Copilot response
 

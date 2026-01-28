@@ -28,7 +28,6 @@ go.work.sum
 .env
 
 # Custom files
-progress.txt
-prd.json
 copilot-session-*
 dist/
+.ralph/
