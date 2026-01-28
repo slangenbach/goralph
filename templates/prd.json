@@ -1,0 +1,14 @@
+{
+    "stories": [
+        {
+            "id": 1,
+            "task": "Create a Go application with a single function called 'hello' that prints 'Hello World!'",
+            "passes": true
+        },
+        {
+            "id": 2,
+            "task": "Adapt the function to accept a name parameter and print 'Hello, <name>!'",
+            "passes": true
+        }
+    ]
+}

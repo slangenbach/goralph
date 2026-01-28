@@ -6,11 +6,23 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"text/template"
+
+	_ "embed"
 )
 
 const exitCondition = "<promise>COMPLETE</promise>"
+
+//go:embed templates/config.json
+var defaultConfig string
+
+//go:embed templates/prd.json
+var defaultPRD string
+
+//go:embed templates/prompt.md
+var defaultPrompt string
 
 type Config struct {
 	PRD           string `json:"prd"`
@@ -119,9 +131,34 @@ func runCopilot(prompt string, model string, tools Tools, logLevel string) (stri
 
 }
 
+func initFiles() {
+	files := map[string]string{
+		"config.json": defaultConfig,
+		"prd.json":    defaultPRD,
+		"prompt.md":   defaultPrompt,
+	}
+
+	os.Mkdir(".ralph", 0755)
+	for path, content := range files {
+		fullPath := filepath.Join(".ralph", path)
+		_, err := os.Stat(fullPath)
+		if !os.IsNotExist(err) {
+			continue
+		}
+		os.WriteFile(fullPath, []byte(content), 0644)
+	}
+}
+
 func main() {
-	configPath := flag.String("config", "config.json", "Path to config file")
+	configPath := flag.String("config", ".ralph/config.json", "Path to config file")
+	doInitFiles := flag.Bool("init", false, "Generate sample configs")
 	flag.Parse()
+
+	if *doInitFiles {
+		initFiles()
+		slog.Info("Successfully initialized config files")
+		os.Exit(0)
+	}
 
 	config, err := loadConfig(*configPath)
 	createLogger(config.LogLevel)

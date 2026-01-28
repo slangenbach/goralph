@@ -1,7 +1,7 @@
 {
-    "prd": "./prd.json",
-    "progress": "./progress.txt",
-    "prompt": "./prompt.txt",
+    "prd": "./.ralph/prd.json",
+    "progress": "./.ralph/progress.txt",
+    "prompt": "./.ralph/prompt.txt",
     "model": "claude-haiku-4.5",
     "maxIterations": 10,
     "tools": {

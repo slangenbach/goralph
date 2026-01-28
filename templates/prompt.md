@@ -4,6 +4,6 @@ Here is the current PRD:
 Here is the progress so far:
 {{.PROGRESS}}
 
-Pick the highest priority incomplete task, implement it, commit your work, mark tasks as passes: true when done, and append your progress to progress.txt.
+Pick the highest priority incomplete task, implement it, commit your work, mark tasks as passes: true when done, and append your progress to progress.md.
 
 When there is no further work to be done, reply with <promise>COMPLETE</promise>.
